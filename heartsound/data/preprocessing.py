@@ -6,7 +6,7 @@ from pathlib import Path
 
 
 def split_audio(input_folder, output_folder, sec_per_split):
-    for filepath in sorted(glob.iglob( input_folder +'/*.wav')):
+    for filepath in sorted(glob.iglob(input_folder +'/*.wav')):
         audio = AudioSegment.from_wav(filepath)
         total_sec = int(audio.duration_seconds)
         filename = Path(filepath).stem
@@ -48,11 +48,11 @@ def create_csv(input_folder, output_folder):
     df.to_csv(output_folder + 'labels_all_data_combined.csv', index=False)
 
 
-def merge_labels():
-    df = pd.read_csv('/home/local/Dokumente/HeartApp/labels_all_data_splitted_combined.csv');
-    labels1 = pd.read_csv('/home/local/Dokumente/HeartApp/PASCAL/label_pascal_splitted.csv');
+def merge_labels(datapath, labelpath1, labelpath2, outputfolder):
+    df = pd.read_csv(datapath)
+    labels1 = pd.read_csv(labelpath1)
     print(labels1)
-    labels2 = pd.read_csv('/home/local/Dokumente/HeartApp/physionet_challenge/labels_physionet_splitted.csv', names=['filename','label']);
+    labels2 = pd.read_csv(labelpath2, names=['filename','label'])
 
 
     print(labels2)
@@ -60,11 +60,11 @@ def merge_labels():
     print(all_labels)
     df = df.merge(all_labels, how='left', on=['filename'])
     print(df)
-    df.to_csv('/home/local/Dokumente/HeartApp/labels_all_data_splitted_combined.csv', index=False)
+    df.to_csv(outputfolder, index=False)
 
 
-def split_test_training_labels():
-    df = pd.read_csv('/home/local/Dokumente/HeartApp/labels_all_data_combined.csv');
+def split_test_training_labels(inputfolder, outputtest, outputtrain):
+    df = pd.read_csv(inputfolder)
     df_train_1 = df.iloc[:970,:]
     df_train_2 = df.iloc[1025:3231,:]
     df_train_3 = df.iloc[3345:, :]
@@ -74,8 +74,8 @@ def split_test_training_labels():
     df_test = pd.concat([df_test_1,df_test_2], ignore_index=True)
     print(df_train)
     print(df_test)
-    df_train.to_csv('/home/local/Dokumente/HeartApp/training_labels_all_data_combined.csv', index=False)
-    df_test.to_csv('/home/local/Dokumente/HeartApp/test_labels_all_data_combined.csv', index=False)
+    df_train.to_csv(outputtrain, index=False)
+    df_test.to_csv(outputtest, index=False)
 
 
 

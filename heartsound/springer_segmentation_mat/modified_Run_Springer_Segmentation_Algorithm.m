@@ -98,7 +98,7 @@ rem                  = mod(length(indx2),4);
 indx2(end-rem+1:end) = [];
 A                    = reshape(indx2,4,length(indx2)/4).';
 
-folder = '/home/local/Dokumente/HeartApp/Segmentation_annotations/All_Data/All_Data_training/'
+folder = 'YOUR/SEGMENTATION/FOLDER'
 ext = '.csv'
 path = [folder filename ext]
 writematrix(A, path)
@@ -112,7 +112,7 @@ if(figures)
    plot(t1,assigned_states,'r--');
    xlabel('Time (s)');
    legend('Audio data', 'Derived states');
-   saveas(gcf,fullfile('/home/local/Dokumente/HeartApp/Segmenation_images/All_Data/All_Data_training/', filename), 'png');
+   saveas(gcf,fullfile('YOUR/IMAGE/FOLDER', filename), 'png');
 end
 
 

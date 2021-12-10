@@ -57,7 +57,7 @@ train_annotations = example_data.example_annotations;
 save('example_B_matrix.mat', 'B_matrix');
 
 % Specify the folder where the files live.
-myFolder = '/home/local/Dokumente/HeartApp/All_Data/Try_Segmentation/';
+myFolder = 'YOUR/SOURCE/FOLDER';
 % Check to make sure that folder actually exists.  Warn user if it doesn't.
 if ~isfolder(myFolder)
     errorMessage = sprintf('Error: The following folder does not exist:\n%s\nPlease specify a new folder.', myFolder);

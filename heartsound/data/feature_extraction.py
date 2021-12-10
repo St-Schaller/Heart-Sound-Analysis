@@ -28,23 +28,25 @@ def extract_features_without_segmentation(audiodata):
     audio, sample_rate = librosa.load(audiodata, res_type='kaiser_fast')
     mfccs = librosa.feature.mfcc(y=audio, sr=sample_rate, n_mfcc=40)
     mfccsscaled = np.mean(mfccs.T ,axis=0)
-    #lpc = librosa.lpc(audio, 100)
 
-    #Zabihi features
     Fs = 2000
     f1 = np.mean(np.min(mfccs, axis=1)) # 1
+
     m4 = moment((np.max(mfccs, axis=1)), 4)
     f5 = abs(np.power(m4, (1 / 4))) # 5
     m4 = moment((skew(mfccs)), 4)
     f6 = abs(np.power(m4, (1 / 4))) # 6
+
     # --------------------------------------------------------------------------
     level = 5
     a5, det5, det4, det3, det2, det1 = wavedec(data=audio, wavelet='db4', level=level)
 
     f7 = log2(var(det3)) # 7
-
-    xx,_ = librosa.load(audiodata, sr=16)
-    f14 ,_ ,f15 = Spectral(xx) # 13 14
+    try:
+        xx,_ = librosa.load(audiodata, sr=16)
+        Pfb1, Pfb2, Pfb3, Pfb4, Pfb5, Pfb6, Pfb7, Pfb8, Pfb9, Pfb10 = Spectral(xx)  # 13 14
+    except Exception:
+        Pfb1 = Pfb2 = Pfb3 = Pfb4 = Pfb5 = Pfb6 = Pfb7 = Pfb8 = Pfb9 = Pfb10 = 0
 
     lp = lpc(double(audio), 10)
     lp2 = lp[1]
@@ -59,7 +61,9 @@ def extract_features_without_segmentation(audiodata):
     _, counts = np.unique(audio, return_counts=True)
 
     shannon = scipy.stats.entropy(counts) #29
-    #tsallis = tsallis_entropy(counts, 2) #31
+
+
+    #tsallis = tsallis_entropy(counts,  2) #31
 
     _, counts = np.unique(a5, return_counts=True)
     shannon_a5 = scipy.stats.entropy(counts) # 32
@@ -70,38 +74,67 @@ def extract_features_without_segmentation(audiodata):
     _, counts = np.unique(det4, return_counts=True)
     shannon_d4 = scipy.stats.entropy(counts)# 38
 
+    '''
+    print(f"MFCCs scaled: {mfccsscaled} \n"
+          f"F1: {f1} \n"
+          f"F5: {f5} \n"
+          f"F6: {f6} \n"
+          f"F7: {f7} \n"
+          f"Pfb1: {Pfb1} \n"
+          f"Pfb2: {Pfb2} \n "
+          f"Pfb3: {Pfb3} \n"
+          f"Pfb4: {Pfb4} \n"
+          f"Pfb5: {Pfb5} \n"
+          f"Pfb6: {Pfb6}\n"
+          f"Pfb7: {Pfb7} \n"
+          f"Pfb8: {Pfb8} \n"
+          f"Pfb9: {Pfb9} \n"
+          f"Pfb10: {Pfb10} \n"
+          f"lp2: {lp2} \n"
+          f"Lp4:  {lp4} \n"
+          f"lp7; {lp7} \n"
+          f"lp9: {lp9} \n"
+          f"lp10: {lp10} \n"
+          f"lp11: {lp11} \n"
+          f"spectral centroid: {spectral_centroid} \n"
+          f"shannon: {shannon} \n"
+          f"shannon_a5: {shannon_a5} \n"
+          f"shannon_d4: {shannon_d4}")
+          
+          '''
+
     # Missing LPC; Tsalllis, Reny
-    return mfccsscaled, f1, f5, f6, f7, f14, f15, lp2, lp4, lp7, lp9, lp10, lp11, spectral_centroid, shannon, shannon_a5, shannon_d4
+    return mfccsscaled, spectral_centroid, f1, f5, f6, f7, Pfb1, Pfb2, Pfb3, Pfb4, Pfb5, Pfb6, Pfb7, Pfb8, Pfb9, Pfb10, lp2, lp4, lp7, lp9, lp10, lp11,  shannon, shannon_a5, shannon_d4
 
 def extract_features_with_segmentation(PCG,states):
     #Feature calculation
-    m_RR = round(mean(diff(states.iloc[:, 0]))) # mean value of RR intervals
-    sd_RR = round(std(diff(states.iloc[:, 0]))) # standard deviation(SD) value of RR intervals
-    mean_IntS1 = round(mean(states.iloc[:, 1]-states.iloc[:, 0])) # mean value of S1 intervals
-    sd_IntS1 = round(std(states.iloc[:, 1]-states.iloc[:, 0])) # SD value of S1 intervals
-    mean_IntS2 = round(mean(states.iloc[:, 3]-states.iloc[:, 2])) # mean value of S2 intervals
-    sd_IntS2 = round(std(states.iloc[:, 3]-states.iloc[:, 2])) # SD value of S2 intervals
-    mean_IntSys = round(mean(states.iloc[:, 2]-states.iloc[:, 1])) # mean value of systole intervals
-    sd_IntSys = round(std(states.iloc[:, 2]-states.iloc[:, 1])); # SD value of systole intervals
-    mean_IntDia = round(mean(states.iloc[1:, 0]-states.iloc[0:-1, 3]))  # mean value of diastole intervals
-    sd_IntDia = round(std(states.iloc[1:, 0]-states.iloc[0:-1, 3])) # SD value of diastole intervals
+    try:
+        m_RR = round(mean(diff(states.iloc[:, 0]))) # mean value of RR intervals
+        sd_RR = round(std(diff(states.iloc[:, 0]))) # standard deviation(SD) value of RR intervals
+        mean_IntS1 = round(mean(states.iloc[:, 1]-states.iloc[:, 0])) # mean value of S1 intervals
+        sd_IntS1 = round(std(states.iloc[:, 1]-states.iloc[:, 0])) # SD value of S1 intervals
+        mean_IntS2 = round(mean(states.iloc[:, 3]-states.iloc[:, 2])) # mean value of S2 intervals
+        sd_IntS2 = round(std(states.iloc[:, 3]-states.iloc[:, 2])) # SD value of S2 intervals
+        mean_IntSys = round(mean(states.iloc[:, 2]-states.iloc[:, 1])) # mean value of systole intervals
+        sd_IntSys = round(std(states.iloc[:, 2]-states.iloc[:, 1])); # SD value of systole intervals
+        mean_IntDia = round(mean(states.iloc[1:, 0]-states.iloc[0:-1, 3]))  # mean value of diastole intervals
+        sd_IntDia = round(std(states.iloc[1:, 0]-states.iloc[0:-1, 3])) # SD value of diastole intervals
+    except Exception:
+        m_RR = sd_RR = mean_IntS1 = sd_IntS1 =  mean_IntS2 = sd_IntS2 = mean_IntSys = sd_IntSys = mean_IntDia = sd_IntDia = 0
 
-    length = len(states) - 1
+    length = len(states)
     R_SysRR = R_DiaRR = R_SysDia = P_S1 = P_Sys = P_S2 = P_Dia = P_SysS1 = P_DiaS2 = SK_Sys = SK_Dia = SK_S1 = SK_S2 = KU_S1 = KU_Sys = KU_Dia = KU_S2 = [0] * length
 
-    for i in range(len(states)):
+    for i in range(length - 1):
         R_SysRR[i] = (states.iloc[i, 2]-states.iloc[i, 1]) /  (states.iloc[i + 1, 0]-states.iloc[i, 0]) * 100
         R_DiaRR[i] =  (states.iloc[i + 1, 0]-states.iloc[i, 3]) /  (states.iloc[i + 1, 0]-states.iloc[i, 0]) * 100
-        R_SysDia[i] = R_SysRR(i) / R_DiaRR(i) * 100
-        print(type(PCG))
-        P_S1[i] = sum(abs(PCG(states[i][0],states[i][1]))) / (states.iloc[i, 1]-states.iloc[i, 0])
-        P_Sys[i] = sum(abs(PCG(states[i][1],states[i][2])))  / (states.iloc[i, 2]-states.iloc[i, 1])
-        P_S2[i] = sum(abs(PCG(states[i][2],states[i][3])))  / (states.iloc[i , 3]-states.iloc[i, 2])
-        P_Dia[i] = sum(abs(PCG(states[i][3],states[i + 1][1])))  / (states.iloc[i + 1 , 0]-states.iloc[i, 3])
-        #P_S1[i] = sum(abs(PCG(A(i, 1):A(i, 2)))) / (A(i, 2) - A(i, 1))
-        #P_Sys[i] = sum(abs(PCG(A(i, 2):A(i, 3)))) / (A(i, 3) - A(i, 2))
-        #P_S2[i] = sum(abs(PCG(A(i, 3):A(i, 4)))) / (A(i, 4) - A(i, 3))
-        #P_Dia[i] = sum(abs(PCG(A(i, 4):A(i + 1, 1)))) / (A(i + 1, 1) - A(i, 4))
+        R_SysDia[i] = R_SysRR[i] / R_DiaRR[i] * 100
+
+        P_S1[i] = sum(abs(PCG[states.iloc[i, 0]:states.iloc[i, 1]])) / (states.iloc[i, 1]-states.iloc[i, 0])
+        P_Sys[i] = sum(abs(PCG[states.iloc[i, 1]:states.iloc[i, 2]]))  / (states.iloc[i, 2]-states.iloc[i, 1])
+        P_S2[i] = sum(abs(PCG[states.iloc[i , 2]:states.iloc[i, 3]]))  / (states.iloc[i , 3]-states.iloc[i, 2])
+        P_Dia[i] = sum(abs(PCG[states.iloc[i, 3]:states.iloc[i+1,0]]))  / (states.iloc[i +1 , 0]-states.iloc[i, 3])
+
         if P_S1[i] > 0:
             P_SysS1[i] = P_Sys[i] / P_S1[i] * 100
         else:
@@ -111,15 +144,15 @@ def extract_features_with_segmentation(PCG,states):
         else:
             P_DiaS2[i] = 0
 
-        SK_S1[i] = skew(PCG(states[i][0],states[i][1]))
-        SK_Sys[i] = skew(PCG(states[i][1],states[i][2]))
-        SK_S2[i] = skew(PCG(states[i][2],states[i][3]))
-        SK_Dia[i] = skew(PCG(states[i][3],states[i + 1][0]))
+        SK_S1[i] = skew(PCG[states.iloc[i, 0]:states.iloc[i, 1]])
+        SK_Sys[i] = skew(PCG[states.iloc[i, 1]:states.iloc[i, 2]])
+        SK_S2[i] = skew(PCG[states.iloc[i, 2]:states.iloc[i, 3]])
+        SK_Dia[i] = skew(PCG[states.iloc[i, 3]:states.iloc[i + 1,0]])
 
-        KU_S1[i] = kurtosis(PCG(states[i][0],states[i][1]))
-        KU_Sys[i] = kurtosis(PCG(states[i][1],states[i][2]))
-        KU_S2[i] = kurtosis(PCG(states[i][2],states[i][3]))
-        KU_Dia[i] = kurtosis(PCG(states[i][3],states[i + 1][0]))
+        KU_S1[i] = kurtosis(PCG[states.iloc[i,0]:states.iloc[i,1]])
+        KU_Sys[i] = kurtosis(PCG[states.iloc[i,1]:states.iloc[i, 2]])
+        KU_S2[i] = kurtosis(PCG[states.iloc[i, 2]:states.iloc[i, 3]])
+        KU_Dia[i] = kurtosis(PCG[states.iloc[i, 3]:states.iloc[i + 1,0]])
 
 
     m_Ratio_SysRR = mean(R_SysRR) # mean value of the interval ratios between systole and RR in each heart beat
@@ -129,17 +162,17 @@ def extract_features_with_segmentation(PCG,states):
     m_Ratio_SysDia = mean(R_SysDia) # mean value of the interval ratios between systole and diastole in each heart beat
     sd_Ratio_SysDia = std(R_SysDia) # SD value of the interval ratios between systole and diastole in each heart beat
 
-    indx_sys = np.argwhere(P_SysS1 > 0 & P_SysS1 < 100) # avoid the flat line signal
-    if len(indx_sys) > 1:
-        m_Amp_SysS1 = mean(P_SysS1(indx_sys)) # mean value of the mean absolute amplitude ratios between systole period and S1 period in each heart beat
-        sd_Amp_SysS1 = std(P_SysS1(indx_sys)) # SD value of the mean absolute amplitude ratios between systole period and S1 period in each heart beat
+    values_sys = [x for x in P_SysS1 if (x > 0) & (x < 100)]
+    if len(values_sys) > 1:
+        m_Amp_SysS1 = mean(values_sys) # mean value of the mean absolute amplitude ratios between systole period and S1 period in each heart beat
+        sd_Amp_SysS1 = std(values_sys) # SD value of the mean absolute amplitude ratios between systole period and S1 period in each heart beat
     else:
         m_Amp_SysS1 = 0
         sd_Amp_SysS1 = 0
-    indx_dia = np.argwhere(P_DiaS2 > 0 & P_DiaS2 < 100)
-    if len(indx_dia) > 1:
-        m_Amp_DiaS2 = mean(P_DiaS2(indx_dia)) # mean value of the mean absolute amplitude ratios between diastole period and S2 period in each heart beat
-        sd_Amp_DiaS2 = std(P_DiaS2(indx_dia)) # SD value of the mean absolute amplitude ratios between diastole period and S2 period in each heart beat
+    values_dia = [x for x in P_DiaS2 if (x > 0) & (x < 100)]
+    if len(values_dia) > 1:
+        m_Amp_DiaS2 = mean(values_dia) # mean value of the mean absolute amplitude ratios between diastole period and S2 period in each heart beat
+        sd_Amp_DiaS2 = std(values_dia) # SD value of the mean absolute amplitude ratios between diastole period and S2 period in each heart beat
     else:
         m_Amp_DiaS2 = 0
         sd_Amp_DiaS2 = 0
@@ -213,24 +246,24 @@ def Spectral(audiodata):
 
     aTotal = Ifb1 + Ifb2 + Ifb3 + Ifb4 + Ifb5 + Ifb6 + Ifb7 + Ifb8 + Ifb9 + Ifb10
     #------------------ calculate areas relative to the total area( %) ------------------
-    # Pfb1 = (Ifb1 / aTotal) * 100
-    # Pfb2 = (Ifb2 / aTotal) * 100
-    # Pfb3 = (Ifb3 / aTotal) * 100
-    # Pfb4 = (Ifb4 / aTotal) * 100
-    # Pfb5 = (Ifb5 / aTotal) * 100
-    # Pfb6 = (Ifb6 / aTotal) * 100
-    # Pfb7 = (Ifb7 / aTotal) * 100
+    Pfb1 = (Ifb1 / aTotal) * 100
+    Pfb2 = (Ifb2 / aTotal) * 100
+    Pfb3 = (Ifb3 / aTotal) * 100
+    Pfb4 = (Ifb4 / aTotal) * 100
+    Pfb5 = (Ifb5 / aTotal) * 100
+    Pfb6 = (Ifb6 / aTotal) * 100
+    Pfb7 = (Ifb7 / aTotal) * 100
     Pfb8 = (Ifb8 / aTotal) * 100
     Pfb9 = (Ifb9 / aTotal) * 100
     Pfb10 = (Ifb10 / aTotal) * 100
 
-    return Pfb8, Pfb9, Pfb10
+    return Pfb1, Pfb2, Pfb3, Pfb4, Pfb5, Pfb6, Pfb7, Pfb8, Pfb9, Pfb10
 
-def run_feature_extraction(path = '/home/local/Dokumente/HeartApp/All_Data/All_Data_test'):
+def run_feature_extraction(path = '/home/local/Dokumente/HeartApp/All_Data_splitted/All_Data_splitted_training'):
     feature_data = []
     filenames = []
     colnames = ['filename', 'labels']
-    labels = pd.read_csv('/home/local/Dokumente/HeartApp/labels_all_data_combined.csv', names=colnames,
+    labels = pd.read_csv('/home/local/Dokumente/HeartApp/labels_all_data_splitted_combined.csv', names=colnames,
                          header=None)
     print(labels)
     column_names = ['mfccsscaled', 'lpc', 'f1', 'f5', 'f6', 'f7', 'f14', 'f15', 'f161821232425', 'spectral_centroid',
@@ -245,13 +278,13 @@ def run_feature_extraction(path = '/home/local/Dokumente/HeartApp/All_Data/All_D
         print(f"Filename: {filename}")
 
         features = extract_features_without_segmentation(audiopath)
-        statepath = '/home/local/Dokumente/HeartApp/Segmentation_annotations/All_Data/All_Data_test/' + filename + '.csv'
+        statepath = '/home/local/Dokumente/HeartApp/Segmentation_annotations/All_Data_splitted/All_Data_splitted_training/' + filename + '.csv'
         if (os.path.exists(statepath)):
             states = pd.read_csv(statepath, header=None)
-            print(f"STates: {states}")
-            features.concat(extract_features_with_segmentation(audiopath, states))
+            audio, sample_rate = librosa.load(audiopath)
+            segmentation_features = (extract_features_with_segmentation(audio, states))
+            features = list(features + segmentation_features)
         feature_data.append(features)
-        print(f"Features: {features}")
 
 
     feature_data = pd.DataFrame(feature_data)
@@ -260,56 +293,26 @@ def run_feature_extraction(path = '/home/local/Dokumente/HeartApp/All_Data/All_D
     df_merged = pd.merge(feature_data, labels, how='inner', on='filename')
     print(df_merged)
     path = '/home/local/Dokumente/HeartApp/Feature_Extraction/'
-    df_merged.to_csv(path + 'Manual_Feature_Extraction_Test.csv', index=False)
+    df_merged.to_csv(path + 'Manual_Feature_Extraction_Training_Splitted.csv', index=False)
 
+def convert_list_values_to_columns(inputtrain, inputtest, outputfolder):
+    df_train = pd.read_csv(inputtrain)
+    df_test = pd.read_csv(inputtest)
+    df_train = pd.concat([df_train, df_test], ignore_index=True)
+    filenames = df_train['filename']
+    mfcc_columns = df_train['0']
+    mfcc_columns = mfcc_columns.str.replace(r'[][]', '', regex=True)
+    mfcc_columns = mfcc_columns.str.split(expand=True)
+    spectral_centroids = df_train['1']
+    spectral_centroids = spectral_centroids.str.replace(r'[][]', '', regex=True)
+    spectral_centroids = spectral_centroids.str.split(expand=True)
+    print(spectral_centroids)
+    rest_data = df_train.iloc[:, 3:]
+    print(rest_data)
+    all_data = filenames.to_frame().join(mfcc_columns)
+    print(all_data)
+    all_data = pd.concat([all_data, spectral_centroids, rest_data], axis=1, ignore_index=True)
+    print(all_data)
+    path = outputfolder
+    all_data.to_csv(path + 'name', index=False)
 
-
-'''
-potes
-function features = get_features_frequency(PCG,idx_states)
-    NFFT = 256;
-    f = (0:NFFT/2-1)/(NFFT/2)*500;
-    freq_range = [25,45;45,65;65,85;85,105;105,125;125,150;150,200;200,300;300,500];
-    p_S1  = nan(size(idx_states,1)-1,NFFT/2);
-    p_Sys = nan(size(idx_states,1)-1,NFFT/2);
-    p_S2  = nan(size(idx_states,1)-1,NFFT/2);
-    p_Dia = nan(size(idx_states,1)-1,NFFT/2);
-    for row=1:size(idx_states,1)-1
-        s1 = PCG(idx_states(row,1):idx_states(row,2));
-        s1 = s1.*hamming(length(s1));
-        Ft = fft(s1,NFFT);
-        p_S1(row,:) = abs(Ft(1:NFFT/2));
-        
-        sys = PCG(idx_states(row,2):idx_states(row,3));
-        sys = sys.*hamming(length(sys));
-        Ft  = fft(sys,NFFT);
-        p_Sys(row,:) = abs(Ft(1:NFFT/2));
-        
-        s2 = PCG(idx_states(row,3):idx_states(row,4));
-        s2 = s2.*hamming(length(s2));
-        Ft = fft(s2,NFFT);
-        p_S2(row,:) = abs(Ft(1:NFFT/2));
-        
-        dia = PCG(idx_states(row,4):idx_states(row+1,1));
-        dia = dia.*hamming(length(dia));
-        Ft  = fft(dia,NFFT);
-        p_Dia(row,:) = abs(Ft(1:NFFT/2));
-    end
-    P_S1 = nan(1,size(freq_range,1));
-    P_Sys = nan(1,size(freq_range,1));
-    P_S2 = nan(1,size(freq_range,1));
-    P_Dia = nan(1,size(freq_range,1));
-    for bin=1:size(freq_range,1)
-        idx = (f>=freq_range(bin,1)) & (f<freq_range(bin,2));
-        P_S1(1,bin) = median(median(p_S1(:,idx)));
-        P_Sys(1,bin) = median(median(p_Sys(:,idx)));
-        P_S2(1,bin) = median(median(p_S2(:,idx)));
-        P_Dia(1,bin) = median(median(p_Dia(:,idx)));
-    end
-    features = [P_S1, P_Sys, P_S2, P_Dia];
-end
-
-'''
-
-
-run_feature_extraction()
