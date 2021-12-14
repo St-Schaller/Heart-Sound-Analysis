@@ -1,19 +1,11 @@
-import glob
-from pathlib import Path
 import pandas as pd
-import librosa
-from matplotlib import pyplot as plt
 from sklearn.neighbors import KNeighborsClassifier
-from sklearn.svm import LinearSVC, SVC
+from sklearn.svm import SVC
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.decomposition import PCA
 from sklearn.model_selection import GridSearchCV
-from sklearn.metrics import confusion_matrix
-from hypopt import GridSearch
-from sklearn.metrics import classification_report
-import seaborn as sns
 
 
 

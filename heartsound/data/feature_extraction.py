@@ -1,10 +1,7 @@
 import glob
 import os
-import signal
-from math import pi, log, log2
+from math import log2
 from pathlib import Path
-
-import dit
 import librosa
 import librosa.display
 import numpy as np
@@ -12,14 +9,8 @@ import pandas as pd
 import scipy
 from librosa import lpc
 from numpy import mean, diff, std, var, double, trapz
-from numpy.fft import fft
 from pywt import wavedec
-from pyyawt import appcoef, detcoef
 from scipy.stats import moment, skew, kurtosis
-import nnresample
-from dit.other import renyi_entropy, tsallis_entropy
-import pyyawt
-
 
 
 
