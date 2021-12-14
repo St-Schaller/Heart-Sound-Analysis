@@ -17,39 +17,26 @@ import seaborn as sns
 
 
 
-def grid_search():
-    #df_train = pd.read_csv('/home/local/Dokumente/HeartApp/Feature_Extraction/All_Data_training_05hop_meanvector_6144_openl3.csv')
-    #df_test = pd.read_csv('/home/local/Dokumente/HeartApp/Feature_Extraction/All_Data_test_05hop_meanvector_6144_openl3.csv')
-    df_train = pd.read_csv('/home/local/Dokumente/HeartApp/Feature_Extraction/Manual_Feature_Extraction_All_Data_Splitted_with_MFCC_Spectroids.csv')
-    #df_train = pd.concat([df_train, df_test], ignore_index=True)
+def grid_search_kNN(inputpath):
+    df_train = pd.read_csv(inputpath)
     df_train.rename(columns={'0': "filename"}, inplace=True)
 
-    '''
-    validation_list = []
-    for file in sorted(glob.glob("/home/local/Dokumente/HeartApp/physionet_challenge/validation/*.wav")):
+
+    '''validation_list = []
+    for file in sorted(glob.glob("validationpath/*.wav")):
         validation_list.append(Path(file).stem)
         print(f"Validation List: {validation_list}")
 
     df_test = df_train[df_train['filename'].str.startswith(tuple(validation_list))]
-    df_train = df_train[~df_train['filename'].str.startswith(tuple(validation_list))]
-    
-    '''
+    df_train = df_train[~df_train['filename'].str.startswith(tuple(validation_list))]'''
 
-
-
-    
-
-    df_test = df_train[df_train['filename'].str.startswith('a')]
-    df_train = df_train[~df_train['filename'].str.startswith('a')]
-    
-
-
+    df_test = df_train[df_train['filename'].str.startswith('d')]
+    df_train = df_train[~df_train['filename'].str.startswith('d')]
 
     print(df_train)
     print(df_test)
     df_train = df_train.dropna()
     df_test = df_test.dropna()
-
 
     X_train = df_train.iloc[:, 1:-1]
     print(X_train)
@@ -70,14 +57,14 @@ def grid_search():
         Pipeline(
             steps=[
                 ('scaler', StandardScaler()),
-                #('dimensionality_reduction', PCA()),
+                ('dimensionality_reduction', PCA()),
                 ('classifier',  KNeighborsClassifier())
             ]
         ),
         Pipeline(
             steps=[
                 ('scaler', MinMaxScaler()),
-                #('dimensionality_reduction', PCA()),
+                ('dimensionality_reduction', PCA()),
                 ('classifier',  KNeighborsClassifier(n_neighbors=3))
             ]
         )
@@ -85,20 +72,17 @@ def grid_search():
 
     parameter_grids = [
         {
-            #'classifier__n_neighbors': [3, 5, 11, 9],
             'classifier__weights': ['uniform', 'distance'],
             'classifier__metric': ['euclidean', 'manhattan']
         },
         {
-            #'dimensionality_reduction__n_components': [32, 100, 200],
-            #'classifier__n_neighbors': [3, 5, 11, 9],
+            'dimensionality_reduction__n_components': [32, 100, 200],
             'classifier__weights': ['uniform', 'distance'],
             'classifier__metric': ['euclidean', 'manhattan']
         },
         {
             'scaler__feature_range': [(0, 1), (-1, 1)],
-            #'dimensionality_reduction__n_components': [32, 100, 200],
-            #'classifier__n_neighbors': [3,5,11,9],
+            'dimensionality_reduction__n_components': [32, 100, 200],
             'classifier__weights': ['uniform', 'distance'],
             'classifier__metric': ['euclidean', 'manhattan']
         }
@@ -117,28 +101,24 @@ def grid_search():
 
     print(best_scores)
     print(scores_best_estimators)
-    print(params_best_estimators)
     print(best_estimators)
 
 
-def grid_search_svm():
-    # df_train = pd.read_csv('/home/local/Dokumente/HeartApp/Feature_Extraction/All_Data_training_05hop_meanvector_6144_openl3.csv')
-    # df_test = pd.read_csv('/home/local/Dokumente/HeartApp/Feature_Extraction/All_Data_test_05hop_meanvector_6144_openl3.csv')
-    df_train = pd.read_csv('/home/local/Dokumente/HeartApp/Feature_Extraction/Manual_Feature_Extraction_All_Data_Splitted_with_MFCC_Spectroids.csv')
-    #df_train = pd.concat([df_train, df_test], ignore_index=True)
+def grid_search_svm(inputpath):
+    df_train = pd.read_csv(inputpath)
     df_train.rename(columns={'0': "filename"}, inplace=True)
 
 
-    validation_list = []
-    for file in sorted(glob.glob("/home/local/Dokumente/HeartApp/physionet_challenge/validation/*.wav")):
+    '''validation_list = []
+    for file in sorted(glob.glob("validationpath/*.wav")):
         validation_list.append(Path(file).stem)
 
     df_test = df_train[df_train['filename'].str.startswith(tuple(validation_list))]
-    df_train = df_train[~df_train['filename'].str.startswith(tuple(validation_list))]
+    df_train = df_train[~df_train['filename'].str.startswith(tuple(validation_list))]'''
 
 
-    #df_test = df_train[df_train['filename'].str.startswith('d')]
-    #df_train = df_train[~df_train['filename'].str.startswith('d')]
+    df_test = df_train[df_train['filename'].str.startswith('d')]
+    df_train = df_train[~df_train['filename'].str.startswith('d')]
 
     print(df_train)
     print(df_test)
@@ -172,7 +152,7 @@ def grid_search_svm():
         Pipeline(
             steps=[
                 ('scaler', MinMaxScaler()),
-                #('dimensionality_reduction', PCA()),
+                ('dimensionality_reduction', PCA()),
                 ('classifier', SVC(kernel= 'rbf'))
             ]
         )
@@ -180,18 +160,18 @@ def grid_search_svm():
 
     parameter_grids = [
         {
-            'classifier__C': [0.1, 1, 10, 100, 1000],
-            'classifier__gamma': [1, 0.1, 0.01, 0.001, 0.0001],
+            'classifier__C': [0.1, 1, 10],
+            'classifier__gamma': [1, 0.1, 0.01, 0.001],
         },
         {
             'dimensionality_reduction__n_components': [32, 100, 200],
-            'classifier__C': [0.1, 1, 10, 100, 1000],
-            'classifier__gamma': [1, 0.1, 0.01, 0.001, 0.0001],
+            'classifier__C': [0.1, 1, 10],
+            'classifier__gamma': [1, 0.1, 0.01, 0.001],
         },
         {
             'scaler__feature_range': [(0, 1), (-1, 1)],
-            #'dimensionality_reduction__n_components': [32, 100, 200],
-            'classifier__C': [0.1, 1, 10, 100, 1000],
+            'dimensionality_reduction__n_components': [32, 100, 200],
+            'classifier__C': [0.1, 1, 10],
             'classifier__gamma': [1, 0.1, 0.01, 0.001, 0.0001],
         }
     ]
@@ -200,7 +180,7 @@ def grid_search_svm():
     best_estimators = []
     best_scores = []
     for i in range(len(pipelines)):
-        gs = GridSearchCV(pipelines[i], parameter_grids[i], scoring='recall_macro', cv=8, verbose=3)
+        gs = GridSearchCV(pipelines[i], parameter_grids[i], scoring='recall_macro', cv=2, verbose=3)
         gs.fit(X_train, y_train.values.ravel())
         best_scores.append(gs.best_score_)
         scores_best_estimators.append(gs.best_estimator_.score(X_test, y_test))
@@ -209,12 +189,7 @@ def grid_search_svm():
 
     print(best_scores)
     print(scores_best_estimators)
-    print(params_best_estimators)
     print(best_estimators)
-
-
-
-
 
 grid_search_svm()
 

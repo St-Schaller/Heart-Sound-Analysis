@@ -37,9 +37,7 @@ def wav_to_csv(input_filename):
 
     print('Save is done')
 
-#wav_to_csv("b0078.wav")
-wav_to_csv("a0007.wav")
-signal = "a0007_resampled.csv"  # sig1,sig2,sig3,eeg or any other csv file with a signal
+signal = "sig1.csv"  # sig1,sig2,sig3,eeg or any other csv file with a signal
 data = np.loadtxt(signal, delimiter=",")
 if len(data.shape) > 1:
     f = data[:, 0]

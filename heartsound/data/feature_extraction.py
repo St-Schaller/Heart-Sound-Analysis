@@ -259,11 +259,11 @@ def Spectral(audiodata):
 
     return Pfb1, Pfb2, Pfb3, Pfb4, Pfb5, Pfb6, Pfb7, Pfb8, Pfb9, Pfb10
 
-def run_feature_extraction(path = '/home/local/Dokumente/HeartApp/All_Data_splitted/All_Data_splitted_training'):
+def run_feature_extraction(inputpath, labeldata, statepath, outputpath):
     feature_data = []
     filenames = []
     colnames = ['filename', 'labels']
-    labels = pd.read_csv('/home/local/Dokumente/HeartApp/labels_all_data_splitted_combined.csv', names=colnames,
+    labels = pd.read_csv(labeldata, names=colnames,
                          header=None)
     print(labels)
     column_names = ['mfccsscaled', 'lpc', 'f1', 'f5', 'f6', 'f7', 'f14', 'f15', 'f161821232425', 'spectral_centroid',
@@ -272,13 +272,13 @@ def run_feature_extraction(path = '/home/local/Dokumente/HeartApp/All_Data_split
                     'm_Ratio_DiaRR', 'sd_Ratio_DiaRR', 'm_Ratio_SysDia', 'sd_Ratio_SysDia', 'm_Amp_SysS1', 'sd_Amp_SysS1',
                     'm_Amp_DiaS2', 'sd_Amp_DiaS2', 'mSK_S1' , 'sdSK_S1' ,'mSK_Sys', 'sdSK_Sys', 'mSK_S2', 'sdSK_S2', 'mSK_Dia',
                     'sdSK_Dia', 'mKU_S1', 'sdKU_S1', 'mKU_Sys', 'sdKU_Sys', 'mKU_S2', 'sdKU_S2', 'mKU_Dia', 'sdKU_Dia']
-    for audiopath in sorted(glob.iglob(path + '/*.wav')):
+    for audiopath in sorted(glob.iglob(inputpath + '/*.wav')):
         filename = Path(audiopath).stem
         filenames.append(filename)
         print(f"Filename: {filename}")
 
         features = extract_features_without_segmentation(audiopath)
-        statepath = '/home/local/Dokumente/HeartApp/Segmentation_annotations/All_Data_splitted/All_Data_splitted_training/' + filename + '.csv'
+        statepath = statepath + filename + '.csv'
         if (os.path.exists(statepath)):
             states = pd.read_csv(statepath, header=None)
             audio, sample_rate = librosa.load(audiopath)
@@ -292,8 +292,7 @@ def run_feature_extraction(path = '/home/local/Dokumente/HeartApp/All_Data_split
     print(feature_data)
     df_merged = pd.merge(feature_data, labels, how='inner', on='filename')
     print(df_merged)
-    path = '/home/local/Dokumente/HeartApp/Feature_Extraction/'
-    df_merged.to_csv(path + 'Manual_Feature_Extraction_Training_Splitted.csv', index=False)
+    df_merged.to_csv(outputpath + 'Manual_Feature_Extraction_Training_Splitted.csv', index=False)
 
 def convert_list_values_to_columns(inputtrain, inputtest, outputfolder):
     df_train = pd.read_csv(inputtrain)
@@ -314,5 +313,8 @@ def convert_list_values_to_columns(inputtrain, inputtest, outputfolder):
     all_data = pd.concat([all_data, spectral_centroids, rest_data], axis=1, ignore_index=True)
     print(all_data)
     path = outputfolder
-    all_data.to_csv(path + 'name', index=False)
+    all_data.to_csv(path + '', index=False)
+
+
+convert_list_values_to_columns()
 
